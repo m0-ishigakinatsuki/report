@@ -1,0 +1,199 @@
+float r=10; //ハンドの半径
+float b=4; //ハンドの厚さ
+float d = 10; //円柱の直径
+float baseW = 10;
+float baseH = 60;
+float armW1 = 10;
+float armW2 = 10;
+float armW3 = 10;
+float armW3h = 5;
+float armW4 = 10;
+float armL3 = 20;
+float armL1 = armL3+b+d/2+baseW;
+float armL2 = 100;
+float armL4 = 15;
+float angle1 = 0;
+float s = 0;//回転速度
+float l =100+2*b;
+
+float dif = 1;
+float rad = PI/360;
+float radi = 0;
+float q =20;
+
+
+
+
+void setup(){
+  size(1000,1000,P3D); //画面サイズの指定
+  background(0); //背景色の指定
+  lights();
+  noStroke();
+  camera(500, 500, 500, 0, 0, 0, 0, 0, -1);
+}
+
+void draw(){
+  
+  background(0);
+  scale(4);
+  
+  if(keyPressed){
+    if((key=='e')&&(r<l/2-b)){ //ハンドの拡大
+      r=r+dif;
+      armL1+=dif;
+    }
+    if((key=='s')&&(d/2<r)){ //ハンドの縮小
+      r=r-dif;
+      armL1-=dif;
+    }
+    if(key=='a'){ //アーム全体の回転
+      angle1+=rad;
+    }
+    if(key=='A'){ //アーム全体の回転
+      angle1=angle1-rad;
+    }
+     if(key=='o'){ //蓋を開ける方向への回転
+      s=s-rad;
+      angle1=angle1-rad;
+    }
+     if(key=='c'){ //蓋を閉める方向への回転
+      s=s+rad;
+      angle1=angle1+rad;
+    }
+     if((key=='H')&&(2*r>d)){ //baseの高さを上げる
+      baseH=baseH+dif;
+    }
+     if((key=='h')&&(armL4+armW3h-armW1-baseH<0)&&(2*r>d)){ //baseの高さを下げる
+      baseH=baseH-dif;
+    }
+     if((key=='L')&&(armL4+armW3h-armW1-baseH<0)){ //arm4を長くする
+      armL4=armL4+dif;
+    }
+     if((key=='l')&&(armL4>0)){ //arm4を短くする
+      armL4=armL4-dif;
+    }
+    if((key=='D')&&(d<l/2-b)){ //円柱の直径を大きくする
+      d+=dif;
+    }
+    if((key=='d')&&(d>1)){ //円柱の直径を小さくする
+      d-=dif;
+    }
+    if(key=='Q'){ //円柱の高さを大きくする
+      q+=dif;
+    }
+    if((key=='q')&&(q>2)){ //円柱の高さを小さくする
+      q-=dif;
+    }
+}
+  
+  
+  translate(0,0,0);
+  
+  pushMatrix();
+  
+  //アームの作成
+  
+  //base
+  translate(0,0,baseH/2);
+  fill(175);
+  box(baseW,baseW,baseH);
+  
+  //link1
+  rotateZ(angle1);
+  translate(0,-armL1/2+armW1/2,baseH/2+armW1/2);
+  fill(150);
+  box(armW1,armL1,armW1);
+
+  //link2
+  translate(0,armW2/2-armL1/2,0);
+  rotateZ(-s);
+  translate(0,armL2/2-armW2/2,armW1/2+armW2/2);
+  fill(125);
+  box(armW2,armL2,armW2);
+  
+  //link4
+  translate(0,armL2/2-armW4/2,-armW2/2-armL4/2);
+  fill(200);
+  box(armW4,armW4,armL4);
+
+  //link3
+  rotateZ(s);
+  translate(0,armL3/2-armW4/2,-armL4/2-armW3h/2);
+  fill(100);
+  box(armW3,armL3,armW3h);
+  
+  //handle
+  fill(125);
+  beginShape();
+  translate(0,armL3/2+b/2,0);
+  box(2*r+2*b,b,armW3h);
+  translate(-r-b/2,0.9*r,0);
+  box(b,1.8*r,armW3h);
+  translate(2*r+b,0,0);
+  box(b,1.8*r,armW3h);
+  endShape();
+  
+
+  
+  popMatrix();
+  
+
+
+
+pillar(q, d/2 , d/2);   //円柱の作成(長さ,上面の半径,底面の半径)
+}
+
+
+
+void pillar(float length, float radius1 , float radius2){
+float x,y,z;
+directionalLight(255,255,0,-1,-1,-1);
+translate(0,-baseW/2+armL2-armW4/2,0);
+  
+pushMatrix();
+//上面
+fill(255,255,0);
+beginShape(TRIANGLE_FAN);
+z = length;
+vertex(0, 0, z);
+for(int deg = 0; deg <= 360; deg = deg + 10){
+x = cos(radians(deg)) * radius1;
+y = sin(radians(deg)) * radius1;
+vertex(x, y, z);
+}
+endShape();             
+
+//底面
+beginShape(TRIANGLE_FAN);
+fill(255,255,0);
+z = 0;
+vertex(0, 0, z);
+for(int deg = 0; deg <= 360; deg = deg + 10){
+x = cos(radians(deg)) * radius2;
+y = sin(radians(deg)) * radius2;
+vertex(x, y, z);
+}
+endShape();
+
+//側面の作成
+fill(255,255,0);
+beginShape(TRIANGLE_STRIP);
+for(int deg =0; deg <= 360; deg = deg + 5){
+x = cos(radians(deg)) * radius1;
+z = 0;
+y = sin(radians(deg)) * radius1;
+vertex(x, y, z);
+x = cos(radians(deg)) * radius2;
+z = length;
+y = sin(radians(deg)) * radius2;
+vertex(x, y, z);
+}
+
+endShape();
+popMatrix();
+}
+
+
+
+ 
+  
